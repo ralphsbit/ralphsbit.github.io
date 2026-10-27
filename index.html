@@ -56,8 +56,8 @@
       height: 100%;
       z-index: 0;
       pointer-events: none;
-      -webkit-mask-image: radial-gradient(ellipse at center, #000 35%, transparent 75%);
-      mask-image: radial-gradient(ellipse at center, #000 35%, transparent 75%);
+      -webkit-mask-image: radial-gradient(ellipse at center, #000 50%, transparent 90%);
+      mask-image: radial-gradient(ellipse at center, #000 50%, transparent 90%);
     }
     .header img {
       width: 140px;
@@ -114,13 +114,19 @@
       transform: scale(0) rotate(-12deg);
       transition: transform 0.22s cubic-bezier(0.3, 1.6, 0.5, 1);
     }
+    /* Each section gets its own colour; the slab behind stays black */
+    nav button { --pop: #e60012; }
+    nav button[data-tab="cv"] { --pop: #2563eb; }
+    nav button[data-tab="activities"] { --pop: #7c3aed; }
+    nav button[data-tab="projects"] { --pop: #16a34a; }
+    nav button[data-tab="contact"] { --pop: #ea580c; }
     nav button::before {
-      background: #000;
+      background: var(--pop);
       z-index: -1;
       clip-path: polygon(6% 8%, 100% 0, 93% 90%, 0 100%);
     }
     nav button::after {
-      background: #e60012;
+      background: #000;
       z-index: -2;
       clip-path: polygon(0 0, 96% 12%, 100% 100%, 8% 86%);
       translate: 6px 5px;
@@ -510,11 +516,11 @@
       <div class="project-collage">
         <div class="project-item">
           <span class="project-title">FIKSI Business Project</span>
-          <img src="https://via.placeholder.com/400x250" alt="FIKSI Project 1"/>
+          <img src="images/fiksi-product.jpg" alt="EcoSoap bars with their branded Sabun Alami packaging" loading="lazy"/>
         </div>
         <div class="project-item">
           <span class="project-title">Product Mockups</span>
-          <img src="https://via.placeholder.com/400x250" alt="FIKSI Project 2"/>
+          <img src="images/fiksi-closeup.jpg" alt="Close-up of EcoSoap bars in front of an open gift box" loading="lazy"/>
         </div>
         <div class="project-item">
           <span class="project-title">Pitch Video</span>
@@ -582,7 +588,7 @@
         ctx.clearRect(0, 0, w, h);
 
         // Floor grid
-        ctx.strokeStyle = "rgba(0, 0, 0, 0.06)";
+        ctx.strokeStyle = "rgba(0, 0, 0, 0.1)";
         ctx.lineWidth = 1;
         for (let i = -5; i <= 5; i++) {
           const g = i / 5;
@@ -612,11 +618,11 @@
           pts.forEach((p, i) => (i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)));
           base.forEach(p => ctx.lineTo(p.x, p.y));
           ctx.closePath();
-          ctx.fillStyle = `rgba(22, 163, 74, ${0.05 * boost})`;
+          ctx.fillStyle = `rgba(22, 163, 74, ${0.09 * boost})`;
           ctx.fill();
           ctx.beginPath();
           pts.forEach((p, i) => (i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)));
-          ctx.strokeStyle = `rgba(22, 163, 74, ${0.2 * boost})`;
+          ctx.strokeStyle = `rgba(22, 163, 74, ${0.4 * boost})`;
           ctx.lineWidth = 1.5;
           ctx.stroke();
         });
