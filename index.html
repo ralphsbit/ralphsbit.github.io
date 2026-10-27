@@ -41,6 +41,23 @@
       padding: 40px 20px 20px;
       text-align: center;
       border-bottom: 1px solid #ddd;
+      position: relative;
+      overflow: hidden;
+    }
+    .header > * {
+      position: relative;
+      z-index: 1;
+    }
+    /* Faint 3D chart drawn behind the header content */
+    .header > .header-chart {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+      -webkit-mask-image: radial-gradient(ellipse at center, #000 35%, transparent 75%);
+      mask-image: radial-gradient(ellipse at center, #000 35%, transparent 75%);
     }
     .header img {
       width: 140px;
@@ -83,8 +100,54 @@
       border-bottom: 2px solid #000;
       font-weight: bold;
     }
-    nav button:hover {
-      color: #444;
+    /* Persona-style pop on hover: jagged black slab with a red one behind it */
+    nav button {
+      position: relative;
+      isolation: isolate;
+      transition: color 0.12s ease, transform 0.22s cubic-bezier(0.3, 1.6, 0.5, 1);
+    }
+    nav button::before,
+    nav button::after {
+      content: "";
+      position: absolute;
+      inset: 6px -8px;
+      transform: scale(0) rotate(-12deg);
+      transition: transform 0.22s cubic-bezier(0.3, 1.6, 0.5, 1);
+    }
+    nav button::before {
+      background: #000;
+      z-index: -1;
+      clip-path: polygon(6% 8%, 100% 0, 93% 90%, 0 100%);
+    }
+    nav button::after {
+      background: #e60012;
+      z-index: -2;
+      clip-path: polygon(0 0, 96% 12%, 100% 100%, 8% 86%);
+      translate: 6px 5px;
+      transition-delay: 0.04s;
+    }
+    @media (hover: hover) {
+      nav button:hover {
+        color: #fff;
+        transform: rotate(-5deg) scale(1.18);
+      }
+      nav button:nth-child(even):hover {
+        transform: rotate(4deg) scale(1.18);
+      }
+      nav button:hover::before { transform: scale(1) rotate(-2deg); }
+      nav button:hover::after { transform: scale(1) rotate(5deg); }
+    }
+    nav button:focus-visible {
+      outline: none;
+      color: #fff;
+      transform: rotate(-5deg) scale(1.18);
+    }
+    nav button:focus-visible::before { transform: scale(1) rotate(-2deg); }
+    nav button:focus-visible::after { transform: scale(1) rotate(5deg); }
+    @media (prefers-reduced-motion: reduce) {
+      nav button,
+      nav button::before,
+      nav button::after { transition: none; }
     }
 
     /* Sections */
@@ -305,12 +368,13 @@
 
   <!-- Header -->
   <div class="header">
+    <canvas class="header-chart" aria-hidden="true"></canvas>
     <img src="images/profile.jpg" alt="Ralph Alpedia"/>
     <h1 class="rainbow-text">
       <span style="--i:1">R</span><span style="--i:2">a</span><span style="--i:3">l</span><span style="--i:4">p</span><span style="--i:5">h</span>
       <span style="--i:6">A</span><span style="--i:7">l</span><span style="--i:8">p</span><span style="--i:9">e</span><span style="--i:10">d</span><span style="--i:11">i</span><span style="--i:12">a</span>
     </h1>
-    <p>UBC Sauder Commerce Student • Garuda Scholar • Olympiad Competitor • Mentor • TEDx Speaker</p>
+    <p>UBC Sauder Commerce Student • Garuda Scholar • TEDx Speaker</p>
   </div>
 
   <!-- Navigation Tabs -->
@@ -476,6 +540,103 @@
 
   <script>
     document.getElementById("year").textContent = new Date().getFullYear();
+
+    // Header background: slowly swaying 3D ribbon chart, kept faint on purpose
+    (() => {
+      const canvas = document.querySelector(".header-chart");
+      const ctx = canvas.getContext("2d");
+      const header = canvas.parentElement;
+      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const ROWS = 6, POINTS = 40, PITCH = 0.42, CAM = 3.2;
+      let w = 0, h = 0, visible = true;
+
+      const resize = () => {
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        w = header.clientWidth;
+        h = header.clientHeight;
+        canvas.width = w * dpr;
+        canvas.height = h * dpr;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      };
+
+      // Upward trend that gets steeper to the right, with a gentle ripple
+      const height = (x, row, t) => {
+        const progress = (x + 1) / 2;
+        return 0.08 + 0.7 * Math.pow(progress, 1.5) * (0.7 + 0.08 * row)
+          + 0.04 * Math.sin(4 * x + t * 0.6 + row * 0.9);
+      };
+
+      const project = (x, y, z, yaw) => {
+        const x1 = x * Math.cos(yaw) - z * Math.sin(yaw);
+        const z1 = x * Math.sin(yaw) + z * Math.cos(yaw);
+        const yc = y - 0.35;
+        const y2 = yc * Math.cos(PITCH) - z1 * Math.sin(PITCH);
+        const z2 = yc * Math.sin(PITCH) + z1 * Math.cos(PITCH);
+        const s = Math.max(w, h * 1.6) * 0.95 / (CAM + z2);
+        return { x: w / 2 + x1 * s, y: h * 0.55 - y2 * s, depth: z2 };
+      };
+
+      const draw = t => {
+        const bull = document.body.classList.contains("bull");
+        const yaw = 0.55 + 0.3 * Math.sin(t * 0.12);
+        ctx.clearRect(0, 0, w, h);
+
+        // Floor grid
+        ctx.strokeStyle = "rgba(0, 0, 0, 0.06)";
+        ctx.lineWidth = 1;
+        for (let i = -5; i <= 5; i++) {
+          const g = i / 5;
+          [[g, -1, g, 1], [-1.1, g, 1.1, g]].forEach(([x1, z1, x2, z2]) => {
+            const a = project(x1, 0, z1, yaw), b = project(x2, 0, z2, yaw);
+            ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+          });
+        }
+
+        // One ribbon per row, painted back to front
+        const rows = [];
+        for (let r = 0; r < ROWS; r++) {
+          const z = -0.8 + 1.6 * r / (ROWS - 1);
+          const pts = [];
+          for (let i = 0; i < POINTS; i++) {
+            const x = -1 + 2 * i / (POINTS - 1);
+            pts.push(project(x, height(x, r, t), z, yaw));
+          }
+          const base = [project(1, 0, z, yaw), project(-1, 0, z, yaw)];
+          rows.push({ pts, base, depth: project(0, 0, z, yaw).depth });
+        }
+        rows.sort((a, b) => b.depth - a.depth);
+        // Same green as the $RALPH chart; a little stronger in bull mode
+        const boost = bull ? 1.6 : 1;
+        rows.forEach(({ pts, base }) => {
+          ctx.beginPath();
+          pts.forEach((p, i) => (i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)));
+          base.forEach(p => ctx.lineTo(p.x, p.y));
+          ctx.closePath();
+          ctx.fillStyle = `rgba(22, 163, 74, ${0.05 * boost})`;
+          ctx.fill();
+          ctx.beginPath();
+          pts.forEach((p, i) => (i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)));
+          ctx.strokeStyle = `rgba(22, 163, 74, ${0.2 * boost})`;
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+        });
+      };
+
+      const loop = ms => {
+        if (visible) draw(ms / 1000);
+        requestAnimationFrame(loop);
+      };
+
+      resize();
+      new ResizeObserver(() => { resize(); if (reduceMotion) draw(0); }).observe(header);
+      if (reduceMotion) {
+        draw(0);
+      } else {
+        // Stop drawing while the header is scrolled out of view
+        new IntersectionObserver(([e]) => { visible = e.isIntersecting; }).observe(header);
+        requestAnimationFrame(loop);
+      }
+    })();
 
     // Ticker: duplicate the items so the scroll loops without a gap
     const tickerTrack = document.querySelector(".ticker-track");
