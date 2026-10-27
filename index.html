@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ralph Alpedia — Portfolio</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Comic Sans MS", cursive, sans-serif;
+      background: #ffffff;
+      color: #000000;
+      line-height: 1.6;
+    }
+
+    /* Rainbow floating letters */
+    @keyframes rainbow {
+      0% { color: red; }
+      16% { color: orange; }
+      32% { color: yellow; }
+      48% { color: green; }
+      64% { color: blue; }
+      80% { color: indigo; }
+      100% { color: violet; }
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+    .rainbow-text span {
+      display: inline-block;
+      animation: rainbow 6s linear infinite, float 3s ease-in-out infinite;
+    }
+    .rainbow-text span:nth-child(n) {
+      animation-delay: calc(0.2s * var(--i)), calc(0.3s * var(--i));
+    }
+
+    /* Header */
+    .header {
+      background: #ffffff;
+      padding: 40px 20px 20px;
+      text-align: center;
+      border-bottom: 1px solid #ddd;
+    }
+    .header img {
+      width: 140px;
+      height: 140px;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 2px solid #000;
+      margin-bottom: 15px;
+    }
+    .header h1 {
+      margin: 10px 0 5px;
+      font-size: 28px;
+    }
+    .header p {
+      margin: 0;
+      color: #555;
+      font-size: 14px;
+    }
+
+    /* Navigation */
+    nav {
+      background: #f9f9f9;
+      border-bottom: 1px solid #ddd;
+      text-align: center;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    nav button {
+      background: none;
+      border: none;
+      margin: 0 10px;
+      padding: 15px 10px;
+      font-family: inherit;
+      font-size: 14px;
+      cursor: pointer;
+      transition: border-bottom 0.2s ease;
+    }
+    nav button.active {
+      border-bottom: 2px solid #000;
+      font-weight: bold;
+    }
+    nav button:hover {
+      color: #444;
+    }
+
+    /* Sections */
+    .section {
+      display: none;
+      max-width: 950px;
+      margin: 30px auto;
+      padding: 20px;
+    }
+    .section.active {
+      display: block;
+    }
+    .card {
+      background: #f9f9f9;
+      border: 1px solid #000000;
+      border-radius: 4px;
+      padding: 20px;
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    /* Project collage */
+    .project-collage {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 12px;
+      margin-top: 15px;
+    }
+    .project-item {
+      position: relative;
+    }
+    .project-collage img,
+    .card-photo {
+      display: block;
+      width: 100%;
+      aspect-ratio: 16 / 10;
+      object-fit: cover;
+      border: 1px solid #000;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    .card-photo {
+      aspect-ratio: auto;
+      margin-top: 10px;
+    }
+    .project-title {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      background: rgba(255,255,255,0.8);
+      border: 1px solid #000;
+      padding: 5px 10px;
+      font-size: 13px;
+      font-weight: bold;
+      border-radius: 4px;
+      z-index: 1;
+    }
+
+    /* Responsive video containers */
+    .video-container {
+      position: relative;
+      padding-bottom: 56.25%; /* 16:9 ratio */
+      height: 0;
+      overflow: hidden;
+      border: 1px solid #000;
+      border-radius: 4px;
+      margin-top: 10px;
+    }
+    .video-container iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 15px;
+      font-size: 13px;
+      color: #555;
+      border-top: 1px solid #ddd;
+      margin-top: 40px;
+    }
+
+    /* CV viewer */
+    .cv-viewer {
+      width: 100%;
+      height: 700px;
+      border: 1px solid #000;
+      border-radius: 4px;
+    }
+
+    .mobile-cv-button {
+      background: #000;
+      color: #fff;
+      padding: 12px 25px;
+      border-radius: 4px;
+      text-decoration: none;
+      text-align: center;
+      font-weight: bold;
+      margin-top: 15px;
+      display: none;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .cv-viewer,
+      .desktop-cv-link {
+        display: none;
+      }
+      .mobile-cv-button {
+        display: inline-block;
+      }
+    }
+
+    /* Stock ticker */
+    .ticker {
+      background: #000;
+      color: #fff;
+      overflow: hidden;
+      white-space: nowrap;
+      font-family: "Courier New", monospace;
+      font-size: 14px;
+      padding: 8px 0;
+    }
+    .ticker-track {
+      display: inline-block;
+      animation: ticker-scroll 40s linear infinite;
+    }
+    .ticker:hover .ticker-track {
+      animation-play-state: paused;
+    }
+    .ticker-item {
+      margin: 0 22px;
+    }
+    .ticker .up { color: #22c55e; }
+    .ticker .down { color: #ef4444; }
+    @keyframes ticker-scroll {
+      from { transform: translateX(0); }
+      to { transform: translateX(-50%); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .ticker-track { animation: none; }
+    }
+
+    /* $RALPH stock chart */
+    .chart-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 10px;
+    }
+    .chart-head h3 { margin: 0; }
+    .chart-price {
+      font-family: "Courier New", monospace;
+      font-weight: bold;
+      color: #16a34a;
+    }
+    .chart-wrap {
+      position: relative;
+      margin-top: 10px;
+    }
+    .chart-wrap svg {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+    .chart-point { cursor: pointer; }
+    .chart-tip {
+      position: absolute;
+      transform: translate(-50%, calc(-100% - 12px));
+      background: #000;
+      color: #fff;
+      font-size: 13px;
+      padding: 6px 10px;
+      border-radius: 4px;
+      width: max-content;
+      max-width: 220px;
+      pointer-events: none;
+      display: none;
+    }
+    .chart-tip.left { transform: translate(-10%, calc(-100% - 12px)); }
+    .chart-tip.right { transform: translate(-90%, calc(-100% - 12px)); }
+    .chart-tip .chg { font-family: "Courier New", monospace; font-weight: bold; }
+    .chart-note {
+      font-size: 12px;
+      color: #555;
+      margin: 6px 0 0;
+    }
+
+    /* Bull market mode (type "bull") */
+    body.bull .rainbow-text span {
+      animation: float 3s ease-in-out infinite;
+      color: #16a34a;
+    }
+    body.bull .rainbow-text::after {
+      content: " 📈🐂";
+    }
+    body.bull .ticker .down { color: #22c55e; }
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #16a34a;
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 4px;
+      font-weight: bold;
+      z-index: 10;
+      transition: opacity 0.3s ease;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <img src="images/profile.jpg" alt="Ralph Alpedia"/>
+    <h1 class="rainbow-text">
+      <span style="--i:1">R</span><span style="--i:2">a</span><span style="--i:3">l</span><span style="--i:4">p</span><span style="--i:5">h</span>
+      <span style="--i:6">A</span><span style="--i:7">l</span><span style="--i:8">p</span><span style="--i:9">e</span><span style="--i:10">d</span><span style="--i:11">i</span><span style="--i:12">a</span>
+    </h1>
+    <p>UBC Sauder Commerce Student • Garuda Scholar • Olympiad Competitor • Mentor • TEDx Speaker</p>
+  </div>
+
+  <!-- Navigation Tabs -->
+  <nav>
+    <button class="tablink active" data-tab="about">About</button>
+    <button class="tablink" data-tab="cv">CV / Resume</button>
+    <button class="tablink" data-tab="activities">Activities</button>
+    <button class="tablink" data-tab="projects">Projects</button>
+    <button class="tablink" data-tab="contact">Contact</button>
+  </nav>
+
+  <!-- Stock ticker (contents duplicated by script for a seamless loop) -->
+  <div class="ticker" aria-label="Achievements ticker">
+    <div class="ticker-track">
+      <span class="ticker-group">
+        <span class="ticker-item">$RALPH 128.00 <span class="up">▲ +1180%</span></span>
+        <span class="ticker-item">GARUDA <span class="up">▲ FULL-RIDE</span></span>
+        <span class="ticker-item">UBC <span class="up">▲ SAUDER BCOM 2030</span></span>
+        <span class="ticker-item">ISPO <span class="up">▲ FINALIST</span></span>
+        <span class="ticker-item">EMC <span class="up">▲ 2x NATIONAL FINALIST</span></span>
+        <span class="ticker-item">IMC <span class="up">▲ HONOURABLE MENTION</span></span>
+        <span class="ticker-item">TEDX <span class="up">▲ +1 TALK</span></span>
+        <span class="ticker-item">FIKSI <span class="up">▲ SEMI-FINALIST</span></span>
+        <span class="ticker-item">MENTEES <span class="up">▲ ISPO BRONZE</span></span>
+        <span class="ticker-item">SLEEP <span class="down">▼ -40%</span></span>
+      </span>
+    </div>
+  </div>
+
+  <!-- About -->
+  <div id="about" class="section active">
+    <div class="card">
+      <p>Hello! I’m Ralph Alpedia, a Bachelor of Commerce student at the University of British Columbia’s Sauder School of Business and a full-ride Garuda Scholarship recipient. I’m passionate about economics, finance, and the business and marketing world. I enjoy research, innovation, and mentoring, and I’ve even shared my ideas on stage as a TEDx speaker.</p>
+      <h3>Highlights</h3>
+      <ul>
+        <li>Finalist, Indonesian Science Project Olympiad (ISPO), Environmental Research Category</li>
+        <li>Honourable Mention, International Math Challenge (IMC)</li>
+        <li>2x National Finalist, Eduversal Mathematics Competition (EMC)</li>
+        <li>Semi-Finalist, National Student Innovation and Entrepreneurship Festival (FIKSI), Business Innovation Category</li>
+        <li>Mentored a sophomore team to an ISPO Bronze Medal</li>
+        <li>Best in Academics, Class 12B, SMA Cahaya Rancamaya Islamic Boarding School</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="chart-head">
+        <h3>📈 $RALPH Share Price</h3>
+        <span class="chart-price">128.00 ▲ +1180% all-time</span>
+      </div>
+      <div class="chart-wrap">
+        <svg id="ralph-chart" viewBox="0 0 600 260" role="img" aria-label="Line chart of the $RALPH share price rising from 2020 to now, one point per milestone"></svg>
+        <div class="chart-tip" id="chart-tip"></div>
+      </div>
+      <p class="chart-note">Hover or tap a point to see the milestone. Not financial advice.</p>
+    </div>
+  </div>
+
+  <!-- CV / Resume -->
+  <div id="cv" class="section">
+    <div class="card">
+      <h3 style="text-align:center;">My CV / Resume</h3>
+      <iframe src="Ralphadelio-Alpedia-CV.pdf" title="Ralphadelio Alpedia CV" class="cv-viewer"></iframe>
+      <a href="Ralphadelio-Alpedia-CV.pdf" target="_blank" class="mobile-cv-button">📄 View CV</a>
+      <p class="desktop-cv-link" style="text-align:center; margin-top:10px;">
+        <a href="Ralphadelio-Alpedia-CV.pdf" target="_blank" style="background:#000;color:#fff;padding:10px 20px;text-decoration:none;border-radius:4px;">Open in New Tab</a>
+      </p>
+    </div>
+  </div>
+
+  <!-- Activities -->
+  <div id="activities" class="section">
+    <div class="card">
+      <h3>🎤 TEDxCRIBS Youth: “The Internet and Small Actions”</h3>
+      <p>A talk linking small actions to historical shifts like the early internet era.</p>
+      <img src="images/tedx-stage.jpg" alt="Ralph speaking on stage at TEDxYouth@CRIBS" class="card-photo" loading="lazy"/>
+      <div class="video-container">
+        <iframe src="https://www.youtube.com/embed/eDlq1x8gu60" title="TEDx Talk" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen loading="lazy"></iframe>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>🗣️ Speech Competition (BRIN)</h3>
+      <div class="video-container">
+        <iframe src="https://www.youtube.com/embed/Qa1OmeHO5r4" title="BRIN Speech Competition" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen loading="lazy"></iframe>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>🎶 TANOS Songwriting Competition</h3>
+      <div class="video-container">
+        <iframe src="https://www.youtube.com/embed/RJWYznJWPrM" title="TANOS Songwriting Competition" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen loading="lazy"></iframe>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>🤝 Volunteering & Student Council</h3>
+      <div class="project-collage">
+        <div class="project-item">
+          <span class="project-title">Qurban Meat Distribution 2025</span>
+          <img src="images/qurban-volunteering.jpg" alt="Volunteer team at the Cahaya Rancamaya Qurban meat distribution, June 2025" loading="lazy"/>
+        </div>
+        <div class="project-item">
+          <span class="project-title">Mentoring &amp; Research Tutoring</span>
+          <img src="images/classroom-demo.jpg" alt="Ralph leading a project demonstration for younger students" loading="lazy"/>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Projects -->
+  <div id="projects" class="section">
+    <div class="card">
+      <div class="project-collage">
+        <div class="project-item">
+          <span class="project-title">EcoSoap — Final Product</span>
+          <img src="images/ispo-ecosoap.jpg" alt="EcoSoap bars featured on Garuda TV" loading="lazy"/>
+        </div>
+        <div class="project-item">
+          <span class="project-title">Featured on Garuda TV</span>
+          <img src="images/ispo-garudatv.jpg" alt="Research poster by Ralphadelio Chaska Alpedia and Renson Elsan Halim shown on Garuda TV" loading="lazy"/>
+        </div>
+        <div class="project-item">
+          <span class="project-title">ISPO Video Presentation</span>
+          <div class="video-container">
+            <iframe src="https://www.youtube.com/embed/t2Dq3YeJXBA" title="ISPO Video Presentation" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen loading="lazy"></iframe>
+          </div>
+        </div>
+      </div>
+      <p>Finalist in Indonesian Science Project Olympiad — Environmental Research Category.</p>
+    </div>
+
+    <div class="card">
+      <div class="project-collage">
+        <div class="project-item">
+          <span class="project-title">FIKSI Business Project</span>
+          <img src="https://via.placeholder.com/400x250" alt="FIKSI Project 1"/>
+        </div>
+        <div class="project-item">
+          <span class="project-title">Product Mockups</span>
+          <img src="https://via.placeholder.com/400x250" alt="FIKSI Project 2"/>
+        </div>
+        <div class="project-item">
+          <span class="project-title">Pitch Video</span>
+          <div class="video-container">
+            <iframe src="https://www.youtube.com/embed/F_ZEth7btns" title="FIKSI Pitch Video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen loading="lazy"></iframe>
+          </div>
+        </div>
+      </div>
+      <p>Semi-Finalist at the National Student Innovation and Entrepreneurship Festival (FIKSI), Business Innovation Category.</p>
+    </div>
+  </div>
+
+  <!-- Contact -->
+  <div id="contact" class="section">
+    <div class="card">
+      <p>Email: <a href="mailto:ralph.alpedia@gmail.com">ralph.alpedia@gmail.com</a></p>
+      <p>Student Email: <a href="mailto:ralpedia@student.ubc.ca">ralpedia@student.ubc.ca</a></p>
+      <p>LinkedIn: <a href="https://www.linkedin.com/in/ralphadelio-alpedia/" target="_blank" rel="noopener">www.linkedin.com/in/ralphadelio-alpedia/</a></p>
+    </div>
+  </div>
+
+  <footer>© <span id="year">2026</span> Ralph Alpedia</footer>
+
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+
+    // Ticker: duplicate the items so the scroll loops without a gap
+    const tickerTrack = document.querySelector(".ticker-track");
+    const tickerCopy = tickerTrack.firstElementChild.cloneNode(true);
+    tickerCopy.setAttribute("aria-hidden", "true");
+    tickerTrack.appendChild(tickerCopy);
+
+    // $RALPH chart: one point per milestone
+    const milestones = [
+      { text: "2020: IPO — joined OSCAR, the school Olympiad squad", v: 10 },
+      { text: "Competed in AMO, OSN Economics, OMI & KSR", v: 22 },
+      { text: "July 2023: Started at SMA Cahaya Rancamaya", v: 30 },
+      { text: "2x National Finalist, EMC", v: 45 },
+      { text: "Exam season (temporary correction)", v: 39 },
+      { text: "Finalist, ISPO — Environmental Research", v: 60 },
+      { text: "Semi-Finalist, FIKSI — Business Innovation", v: 68 },
+      { text: "Mentored a sophomore team to ISPO Bronze", v: 78 },
+      { text: "Dec 2024: TEDxCRIBS Youth talk", v: 90 },
+      { text: "Best in Academics, Class 12B", v: 102 },
+      { text: "Garuda Scholarship — full ride 🚀", v: 120 },
+      { text: "Now: Commerce at UBC Sauder", v: 128 }
+    ];
+    const W = 600, H = 260, padL = 44, padR = 16, padT = 20, padB = 30, maxV = 140;
+    const xOf = i => padL + i * (W - padL - padR) / (milestones.length - 1);
+    const yOf = v => padT + (1 - v / maxV) * (H - padT - padB);
+    const svgNS = "http://www.w3.org/2000/svg";
+    const chart = document.getElementById("ralph-chart");
+    const add = (tag, attrs, text) => {
+      const el = document.createElementNS(svgNS, tag);
+      for (const k in attrs) el.setAttribute(k, attrs[k]);
+      if (text) el.textContent = text;
+      chart.appendChild(el);
+      return el;
+    };
+
+    add("defs", {}).innerHTML =
+      '<linearGradient id="area-fill" x1="0" y1="0" x2="0" y2="1">' +
+      '<stop offset="0" stop-color="#16a34a" stop-opacity="0.35"/>' +
+      '<stop offset="1" stop-color="#16a34a" stop-opacity="0"/></linearGradient>';
+    [0, 35, 70, 105, 140].forEach(v => {
+      add("line", { x1: padL, x2: W - padR, y1: yOf(v), y2: yOf(v), stroke: "#ddd" });
+      add("text", { x: padL - 6, y: yOf(v) + 4, "text-anchor": "end", "font-size": 14, fill: "#555" }, "$" + v);
+    });
+    add("text", { x: xOf(0), y: H - 8, "text-anchor": "middle", "font-size": 14, fill: "#555" }, "2020");
+    add("text", { x: xOf(milestones.length - 1), y: H - 8, "text-anchor": "middle", "font-size": 14, fill: "#555" }, "Now");
+
+    const linePts = milestones.map((m, i) => xOf(i) + "," + yOf(m.v)).join(" ");
+    add("polygon", { points: `${xOf(0)},${yOf(0)} ${linePts} ${xOf(milestones.length - 1)},${yOf(0)}`, fill: "url(#area-fill)" });
+    add("polyline", { points: linePts, fill: "none", stroke: "#16a34a", "stroke-width": 3, "stroke-linejoin": "round" });
+
+    const tip = document.getElementById("chart-tip");
+    const showTip = i => {
+      const m = milestones[i];
+      const prev = i > 0 ? milestones[i - 1].v : null;
+      const pct = prev ? ((m.v - prev) / prev * 100).toFixed(1) : null;
+      const chg = pct === null ? "IPO $10.00"
+        : (pct >= 0 ? `▲ +${pct}%` : `▼ ${pct}%`);
+      tip.innerHTML = `${m.text}<br><span class="chg" style="color:${pct < 0 ? "#ef4444" : "#22c55e"}">$${m.v.toFixed(2)} ${chg}</span>`;
+      tip.style.left = (xOf(i) / W * 100) + "%";
+      tip.style.top = (yOf(m.v) / H * 100) + "%";
+      tip.className = "chart-tip" + (i < 2 ? " left" : i > milestones.length - 3 ? " right" : "");
+      tip.style.display = "block";
+    };
+    milestones.forEach((m, i) => {
+      const dropped = i > 0 && m.v < milestones[i - 1].v;
+      add("circle", { cx: xOf(i), cy: yOf(m.v), r: 5, fill: dropped ? "#ef4444" : "#16a34a", stroke: "#fff", "stroke-width": 2 });
+      const hit = add("circle", { cx: xOf(i), cy: yOf(m.v), r: 16, fill: "transparent", class: "chart-point" });
+      hit.addEventListener("mouseenter", () => showTip(i));
+      hit.addEventListener("click", () => showTip(i));
+      hit.addEventListener("mouseleave", () => { tip.style.display = "none"; });
+    });
+    // Tapping anywhere off a point closes the tooltip (phones have no mouseleave)
+    document.addEventListener("click", e => {
+      if (!e.target.classList.contains("chart-point")) tip.style.display = "none";
+    });
+
+    // Secret bull market mode: type "bull" anywhere
+    let typed = "";
+    document.addEventListener("keydown", e => {
+      typed = (typed + e.key.toLowerCase()).slice(-4);
+      if (typed !== "bull") return;
+      typed = "";
+      const on = document.body.classList.toggle("bull");
+      const toast = document.createElement("div");
+      toast.className = "toast";
+      toast.textContent = on ? "🐂 Bull market mode activated!" : "🐻 Back to normal trading.";
+      document.body.appendChild(toast);
+      setTimeout(() => { toast.style.opacity = "0"; }, 1800);
+      setTimeout(() => toast.remove(), 2200);
+    });
+
+    document.querySelectorAll(".tablink").forEach(button => {
+      button.addEventListener("click", () => {
+        const tabName = button.getAttribute("data-tab");
+        document.querySelectorAll(".section").forEach(sec => sec.classList.remove("active"));
+        document.querySelectorAll(".tablink").forEach(btn => btn.classList.remove("active"));
+        document.getElementById(tabName).classList.add("active");
+        button.classList.add("active");
+      });
+    });
+  </script>
+</body>
+</html>
