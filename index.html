@@ -4,6 +4,15 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Ralph Alpedia — Portfolio</title>
+  <script>
+    // Pick the theme before the page paints: saved choice first, else the device setting
+    (() => {
+      let saved = null;
+      try { saved = localStorage.getItem("theme"); } catch (e) {}
+      const dark = saved ? saved === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+      document.documentElement.dataset.theme = dark ? "dark" : "light";
+    })();
+  </script>
   <!-- Phones don't ship Comic Sans; Comic Neue is a free lookalike so every device matches -->
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
@@ -100,6 +109,7 @@
       margin: 0 10px;
       padding: 15px 10px;
       font-family: inherit;
+      color: inherit;
       font-size: 14px;
       cursor: pointer;
       transition: border-bottom 0.2s ease;
@@ -417,6 +427,63 @@
       .site-frame .left, .site-frame .right { width: 7px; }
     }
 
+    /* CV "Open in New Tab" button */
+    .cv-tab-button {
+      background: #000;
+      color: #fff;
+      padding: 10px 20px;
+      text-decoration: none;
+      border-radius: 4px;
+    }
+
+    /* Dark mode toggle, bottom-right, styled like the nav pop */
+    .theme-toggle {
+      position: fixed;
+      right: 22px;
+      bottom: 22px;
+      z-index: 60;
+      width: 48px;
+      height: 48px;
+      font-size: 22px;
+      line-height: 1;
+      border: 2px solid #000;
+      background: #fff;
+      cursor: pointer;
+      clip-path: polygon(8% 4%, 100% 0, 94% 96%, 0 100%);
+      box-shadow: 5px 5px 0 var(--theme);
+      transform: rotate(-5deg);
+      transition: transform 0.2s cubic-bezier(0.3, 1.6, 0.5, 1), background 0.2s ease;
+    }
+    .theme-toggle:hover { transform: rotate(4deg) scale(1.12); }
+    @media (max-width: 768px) {
+      .theme-toggle { right: 16px; bottom: 16px; width: 42px; height: 42px; font-size: 19px; }
+    }
+
+    /* Dark mode colours */
+    html[data-theme="dark"] body,
+    html[data-theme="dark"] .header { background: #111113; color: #ececec; }
+    html[data-theme="dark"] .header { border-bottom-color: #2a2a2e; }
+    html[data-theme="dark"] .header p,
+    html[data-theme="dark"] .chart-note,
+    html[data-theme="dark"] footer { color: #a1a1aa; }
+    html[data-theme="dark"] .header img { border-color: #ececec; }
+    html[data-theme="dark"] nav { background: #18181b; border-bottom-color: #2a2a2e; }
+    html[data-theme="dark"] .card { background: #18181b; border-color: #3f3f46; }
+    html[data-theme="dark"] .project-title { background: rgba(17, 17, 19, 0.85); border-color: #52525b; }
+    html[data-theme="dark"] .project-collage img,
+    html[data-theme="dark"] .card-photo,
+    html[data-theme="dark"] .video-container,
+    html[data-theme="dark"] .cv-viewer { border-color: #3f3f46; }
+    html[data-theme="dark"] footer { border-top-color: #2a2a2e; }
+    html[data-theme="dark"] a { color: #8ab4ff; }
+    html[data-theme="dark"] .mobile-cv-button,
+    html[data-theme="dark"] .cv-tab-button { background: #ececec; color: #000; }
+    html[data-theme="dark"] .chart-tip { background: #ececec; color: #000; }
+    html[data-theme="dark"] #ralph-chart line { stroke: #2a2a2e; }
+    html[data-theme="dark"] #ralph-chart text { fill: #a1a1aa; }
+    html[data-theme="dark"] #ralph-chart circle:not(.chart-point) { stroke: #18181b; }
+    html[data-theme="dark"] .theme-toggle { background: #18181b; border-color: #ececec; }
+
     /* Opening scene: the RALPHSBIT terminal logs itself in, then a diagonal wipe */
     .intro {
       position: fixed;
@@ -605,7 +672,7 @@
       <iframe src="Ralphadelio-Alpedia-CV.pdf#zoom=100" title="Ralphadelio Alpedia CV" class="cv-viewer"></iframe>
       <a href="Ralphadelio-Alpedia-CV.pdf" target="_blank" class="mobile-cv-button">📄 View CV</a>
       <p class="desktop-cv-link" style="text-align:center; margin-top:10px;">
-        <a href="Ralphadelio-Alpedia-CV.pdf" target="_blank" style="background:#000;color:#fff;padding:10px 20px;text-decoration:none;border-radius:4px;">Open in New Tab</a>
+        <a href="Ralphadelio-Alpedia-CV.pdf" target="_blank" class="cv-tab-button">Open in New Tab</a>
       </p>
     </div>
   </div>
@@ -704,6 +771,8 @@
 
   <footer>© <span id="year">2026</span> Ralph Alpedia</footer>
 
+  <button class="theme-toggle" type="button" aria-label="Switch to dark mode">🌙</button>
+
   <script>
     document.getElementById("year").textContent = new Date().getFullYear();
 
@@ -748,7 +817,8 @@
         ctx.clearRect(0, 0, w, h);
 
         // Floor grid
-        ctx.strokeStyle = "rgba(0, 0, 0, 0.1)";
+        ctx.strokeStyle = document.documentElement.dataset.theme === "dark"
+          ? "rgba(255, 255, 255, 0.12)" : "rgba(0, 0, 0, 0.1)";
         ctx.lineWidth = 1;
         for (let i = -5; i <= 5; i++) {
           const g = i / 5;
@@ -892,6 +962,21 @@
       document.body.appendChild(toast);
       setTimeout(() => { toast.style.opacity = "0"; }, 1800);
       setTimeout(() => toast.remove(), 2200);
+    });
+
+    // Dark mode toggle (bottom-right corner); remembers the choice
+    const themeToggle = document.querySelector(".theme-toggle");
+    const showThemeIcon = () => {
+      const dark = document.documentElement.dataset.theme === "dark";
+      themeToggle.textContent = dark ? "☀️" : "🌙";
+      themeToggle.setAttribute("aria-label", dark ? "Switch to light mode" : "Switch to dark mode");
+    };
+    showThemeIcon();
+    themeToggle.addEventListener("click", () => {
+      const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+      document.documentElement.dataset.theme = next;
+      try { localStorage.setItem("theme", next); } catch (e) {}
+      showThemeIcon();
     });
 
     // Opening scene: the terminal auto-types a login, then wipes away.
